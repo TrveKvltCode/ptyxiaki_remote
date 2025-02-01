@@ -1,6 +1,6 @@
 import streamlit as st
 from toolkit import embed_pdf, retrieve_documents, generate_response
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferWindowMemory
 
 # Set up the Streamlit app
 st.set_page_config(
@@ -17,7 +17,7 @@ if "messages" not in st.session_state:
 
 # Initialize session state for memory
 if 'memory' not in st.session_state:
-    st.session_state.memory = ConversationBufferMemory(memory_key="chat_history", input_key="question")
+    st.session_state.memory =  ""
 
 # Display the chat messages
 for message in st.session_state.messages:
@@ -37,14 +37,23 @@ if st.button("Send"):
 
         # Generate the assistant's response
         assistant_response = generate_response(
-            query=user_input
+            query=user_input,
+            memoryarg= st.session_state.memory
         )
+
 
         # Add assistant's response to chat history
         st.session_state.messages.append({"is_user": False, "text": assistant_response})
 
+        # add chat history for further uses: TO REVIEW AND SAWP WITH MEMORYOBJ
+
+        chat_history = f"Human Message: {user_input} \n\n AI message:{assistant_response}\n\n"
+        st.session_state.memory = chat_history
         # Clear the input field by updating its key
         user_input = None
 
         # Rerun the app to update the displayed messages
         st.rerun()
+
+if st.button("Clear Memory"):
+    st.session_state.memory = ""

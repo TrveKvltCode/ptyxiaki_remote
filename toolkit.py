@@ -12,6 +12,7 @@ from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
+from langchain.memory import ConversationBufferWindowMemory
 
 load_dotenv()
 
@@ -114,12 +115,23 @@ def generate_response(query: str, memoryarg ,vectorstore_dir=CHROMADB_DIR) -> st
         context = "\n\n".join(retrieved_docs)
 
         # Define the prompt template
+        # prompt_template = PromptTemplate(
+        #     input_variables=["context", "question"],
+        #     template=(
+        #         "You are a knowledgeable assistant. Use the following context to answer the question. MAKE SURE TO MENTION THE DOCUMENTS PROVIDED\n\n"
+        #         "Context:\n{context}\n\n"
+        #         "Question: {question}\n\n"
+        #         "Answer:"
+        #     )
+        # )
         prompt_template = PromptTemplate(
-            input_variables=["context", "question"],
+            input_variables=["chat_history","context", "question"],
             template=(
                 "You are a knowledgeable assistant. Use the following context to answer the question. MAKE SURE TO MENTION THE DOCUMENTS PROVIDED\n\n"
+                "Chat History:\n{chat_history}\n\n"
                 "Context:\n{context}\n\n"
                 "Question: {question}\n\n"
+                
                 "Answer:"
             )
         )
@@ -128,14 +140,17 @@ def generate_response(query: str, memoryarg ,vectorstore_dir=CHROMADB_DIR) -> st
         llm = ChatOpenAI(model_name="gpt-4o",
                      temperature=0.7,
                      max_tokens=1500,
-                     openai_api_key=openai_api_key)
+                     openai_api_key=openai_api_key,
+                     )
 
         # Create an LLMChain with the prompt template and the LLM
-        llm_chain = LLMChain(llm=llm, prompt=prompt_template)
+        llm_chain = LLMChain(llm=llm, prompt=prompt_template, verbose=True)
+        #print(f"INPUT KEYS {llm_chain.input_keys}")
 
         # Generate the response by running the chain
-        response = llm_chain.invoke({"context": context, "question": query})
-        print(f"GENERATE RTESPONSE RETURNING {response}")
+        response = llm_chain.invoke({"context": context, "question": query, "chat_history": memoryarg})
+        #print(f"GENERATE RTESPONSE RETURNING {response}")
+
         return str(response['text'])
 
     except Exception as e:
