@@ -1,8 +1,10 @@
-FROM python:3.10-slim-buster
+FROM python:3.11.5-bookworm
 
 WORKDIR /app
 
 COPY . .
+
+RUN mkdir chroma_db
 
 RUN pip3 install -r requirements.txt
 

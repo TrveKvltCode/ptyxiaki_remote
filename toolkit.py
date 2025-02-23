@@ -13,11 +13,16 @@ from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
+#import pysqlite3
+import sys
+
+
+# sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 load_dotenv()
 
 APIKEY = os.getenv("OPENAI_API_KEY")
-CHROMADB_DIR = r"C:\Users\mpamp\PycharmProjects\ptyxiaki\testembeddingsdir"
+CHROMADB_DIR = r"/app/testembeddingsdir"
 
 def embed_pdf(pdf_path: str, vectorstore_dir: str) -> bool:
     """
@@ -81,12 +86,15 @@ def retrieve_documents(query: str, vectorstore_dir: str, top_k: int = 5) -> List
 
         # Retrieve relevant documents
         docs = retriever.invoke(query)
-
+        with open("testdocumentsexported.txt", "w") as file:
+            content = f"LENGTH OF DOCS {len(docs)} CONTENT: {[doc.page_content for doc in docs]}"
+            file.write(content)
         # Extract and return the content from the documents
         return [doc.page_content for doc in docs]
 
     except Exception as e:
-        print(f"An error occurred during retrieval: {e}")
+        with open("testdocumentsexported.txt", "w") as file:
+            file.write(f"An error occurred during retrieval: {e}")
         return []
 
 

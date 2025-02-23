@@ -1,6 +1,18 @@
 import streamlit as st
 from toolkit import embed_pdf, retrieve_documents, generate_response
 from langchain.memory import ConversationBufferWindowMemory
+#import pysqlite3
+import sys
+import os
+from dotenv import load_dotenv
+
+
+#sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+load_dotenv()
+
+APIKEY = os.getenv("OPENAI_API_KEY")
+
 
 # Set up the Streamlit app
 st.set_page_config(
@@ -17,7 +29,7 @@ if "messages" not in st.session_state:
 
 # Initialize session state for memory
 if 'memory' not in st.session_state:
-    st.session_state.memory =  ""
+    st.session_state.memory = ""
 
 # Display the chat messages
 for message in st.session_state.messages:
@@ -40,7 +52,6 @@ if st.button("Send"):
             query=user_input,
             memoryarg= st.session_state.memory
         )
-
 
         # Add assistant's response to chat history
         st.session_state.messages.append({"is_user": False, "text": assistant_response})
